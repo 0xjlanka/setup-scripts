@@ -1,0 +1,11 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =9
+let g:netrw_dirhist_1='/home/jlanka/Work/apq8084-Thales/external/libncurses'
+let g:netrw_dirhist_2='/home/jlanka/Work/apq8084-Thales/device/generic'
+let g:netrw_dirhist_3='/home/jlanka/Work/apq8084-Thales/device'
+let g:netrw_dirhist_4='/home/jlanka/Work/apq8084-Thales/device/qcom/common'
+let g:netrw_dirhist_5='/home/jlanka/Work/apq8084-Thales/device/qcom'
+let g:netrw_dirhist_6='/home/jlanka/Work/apq8084-Thales/device'
+let g:netrw_dirhist_7='/home/jlanka/Work/apq8084-Thales'
+let g:netrw_dirhist_8='/home/jlanka/Work/apq8084-Thales/bootable/bootloader/lk/target/apq8084'
+let g:netrw_dirhist_9='/home/jlanka/Work/apq8084-QCPriv/boot_images/core/boot/secboot3/hw/apq8084'

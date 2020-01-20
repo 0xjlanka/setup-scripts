@@ -1,0 +1,93 @@
+[project]
+	description = Access inherited by all other projects.
+[receive]
+	requireContributorAgreement = false
+	requireSignedOffBy = false
+	requireChangeId = true
+[submit]
+	mergeContent = true
+[capability]
+	administrateServer = group Administrators
+	priority = batch group Non-Interactive Users
+	streamEvents = group Non-Interactive Users
+	accessDatabase = group Administrators
+[access "refs/*"]
+	read = group Registered Users
+[access "refs/for/refs/*"]
+	push = group Registered Users
+	pushMerge = group Registered Users
+[access "refs/heads/*"]
+	create = group Administrators
+	forgeAuthor = group Administrators
+	forgeCommitter = group Administrators
+	push = group Administrators
+	label-Code-Review = -2..+2 group Administrators
+	label-Code-Review = -2..+2 group Reviewers
+	label-Code-Review = -1..+1 group Registered Users
+	submit = group Administrators
+	editTopicName = +force group Administrators
+	label-Verified = -1..+1 group Administrators
+	label-Verified = -1..+1 group Registered Users
+	label-Verified = -1..+1 group Reviewers
+[access "refs/meta/config"]
+	read = group Registered Users
+	push = group Administrators
+	label-Code-Review = -2..+2 group Administrators
+	label-Code-Review = -1..+1 group Maintainers
+	submit = group Administrators
+	label-Verified = -1..+1 group Administrators
+	label-Verified = -1..+1 group Maintainers
+[access "refs/tags/*"]
+	pushTag = group Administrators
+	pushTag = group Project Owners
+	pushTag = group Reviewers
+	pushSignedTag = group Administrators
+	pushSignedTag = group Project Owners
+	pushSignedTag = group Reviewers
+	forgeCommitter = group Administrators
+	forgeCommitter = group Reviewers
+	forgeAuthor = group Administrators
+	forgeAuthor = group Reviewers
+	push = +force group Administrators
+[label "Code-Review"]
+	function = MaxWithBlock
+	copyMinScore = true
+	value = -2 This shall not be merged
+	value = -1 I would prefer this is not merged as is
+	value =  0 No score
+	value = +1 Looks good to me, but someone else must approve
+	value = +2 Looks good to me, approved
+	defaultValue = 0
+[label "Verified"]
+	function = MaxWithBlock
+	value = -1 Fails
+	value =  0 No score
+	value = +1 Verified
+	defaultValue = 0
+[access "^refs/heads/APQ8094.*"]
+	create = group 8094Reviewers
+	push = group 8094Reviewers
+	label-Code-Review = -2..+2 group 8094Reviewers
+	label-Code-Review = -1..+1 group Registered Users
+	submit = group 8094Reviewers
+	editTopicName = group 8094Reviewers
+	exclusiveGroupPermissions = create push label-Code-Review submit editTopicName
+	label-Verified = -1..+1 group Registered Users
+[access "^refs/heads/Thales8084.*"]
+	create = group ThalesReviewers
+	push = group ThalesReviewers
+	label-Code-Review = -2..+2 group ThalesReviewers
+	label-Code-Review = -1..+1 group Registered Users
+	submit = group ThalesReviewers
+	editTopicName = +force group ThalesReviewers
+	exclusiveGroupPermissions = create push label-Code-Review submit
+	label-Verified = -1..+1 group Registered Users
+[access "^refs/heads/retailNext_OpenQ_apq8084_1.2.*"]
+	create = group retailNext8084Reviewers
+	push = group retailNext8084Reviewers
+	label-Code-Review = -2..+2 group retailNext8084Reviewers
+	label-Code-Review = -1..+1 group Registered Users
+	submit = group retailNext8084Reviewers
+	editTopicName = group retailNext8084Reviewers
+	exclusiveGroupPermissions = create push label-Code-Review submit editTopicName
+	label-Verified = -1..+1 group Registered Users

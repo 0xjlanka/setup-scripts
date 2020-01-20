@@ -1,0 +1,6 @@
+create_gpt.sh - Script that creates gpt partition table on the SD card mounted at $DEV.
+Change the value of $DEV to point to the correct device.
+WARNING: This script will wipe off the MBR. Pointing this to incorrect device can be devastating.
+
+flasher.py -  Script to flash GPT partitions from image file to device passed as command line argument.
+Run with no arguments to see usage. Supports flashing sparsed images

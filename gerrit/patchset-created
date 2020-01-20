@@ -1,0 +1,106 @@
+#!/usr/bin/python3
+#
+# MIT License
+#
+# Copyright (c) 2020 Jitendra Lanka - https://github.com/0xjlanka
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Gerrit patchset-create script
+#
+# Post redmine issue updates automatically if the gerrit
+# commit message contains redmine issue number in square brackets.
+# Eg. [1], [1234], [43212321]
+# Uses python-redmine package.
+
+import redmine
+import optparse
+import subprocess
+import re
+
+SERVER='http://redmine'
+USER='gerrit'
+PASSWD='gerrit'
+
+def extract_buglist(data):
+    # Search for patterns that match:
+    # [Bug: 12312],
+    # [!@#123$@#$],
+    # [ladj345sdd],
+    # [    123123],
+    # [123213    ],
+    # [   123    ] and [123]
+    # Extract only the numeric part i.e. within (...)
+    exp = r'\[[^\d]*(\d+)[^\d]*\]'
+    # Explanation:
+    # 1. \[ -> Match a open square bracket
+    # 2. [^\d]* -> After 1, match 0 or more chars of non-digits.
+    #    i.e. (space (0x20) to /(0x2F)) and (: (0x3A) to ~(0x7E))
+    # 3. (\d+) -> After 2, match 1 or more digits (0-9) and create group
+    # 4. [^\d]* -> After 3, match 0 or more chars of non-digits.
+    #    i.e. (space (0x20) to /(0x2F)) and (: (0x3A) to ~(0x7E))
+    # 5. \] -> After 4, match a closing square bracket.
+    code = re.compile(exp)
+    lines = data.splitlines()
+    blist = set()
+    for l in lines:
+        ob = code.findall(l)
+        if (len(ob) > 0):
+            for i in ob:
+                blist.add(int(i))
+    return blist
+
+if __name__ == '__main__':
+    parser = optparse.OptionParser()
+    parser.add_option('--change', dest='changeid')
+    parser.add_option('--is-draft', dest='isdraft')
+    parser.add_option('--kind', dest='kind')
+    parser.add_option('--change-url', dest='changeurl')
+    parser.add_option('--change-owner', dest='changeowner')
+    parser.add_option('--project', dest='project')
+    parser.add_option('--branch', dest='branch')
+    parser.add_option('--topic', dest='topic')
+    parser.add_option('--uploader', dest='uploader')
+    parser.add_option('--commit', dest='commit')
+    parser.add_option('--patchset', dest='patchset')
+    (opt, args) = parser.parse_args()
+
+    if (opt.isdraft.lower() != "true"):
+        cmsg = subprocess.check_output(['git', 'show', '--pretty=%B', '--no-patch', opt.commit]).decode()
+        blist = extract_buglist(cmsg)
+        if len(blist) > 0:
+            rm = redmine.Redmine(SERVER, username=USER, password=PASSWD)
+            for i in blist:
+                issue = rm.issue.get(i)
+                note = '*%{color:blue} The following change had been submitted for review:%*\r\n'
+                note += '*Change:* '+opt.commit+'\r\n'
+                note += '*Patchset:* '+opt.patchset+'\r\n'
+                note += '*Uploaded by:* '+opt.uploader+'\r\n'
+                note += '*Project:* '+opt.project+'\r\n'
+                note += '*Branch:* '+opt.branch+'\r\n'
+                note += '*Change URL:* '+opt.changeurl+'\r\n'
+                note += '*Commit message:*\r\n'+cmsg+'\r\n'
+                issue.notes = note
+                if not issue.save():
+                    print("Error posting to issue "+str(i)+" on redmine, check connection")
+                else:
+                    print("Issue "+str(i)+" updated")
+    else:
+        print("Ignoring draft change:",opt.changeid,"from",opt.uploader)
+

@@ -1,0 +1,116 @@
+
+# MIT License
+#
+# Copyright (c) 2020 Jitendra Lanka - https://github.com/0xjlanka
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Script that excecutes remotely
+
+DATE=$1
+BUILDNAME="My8084"
+IMGDIR=`pwd`/$DATE-Images
+BUILDDIR=`pwd`/$DATE
+
+source ~/.bashrc
+mkdir -p $BUILDDIR
+mkdir -p $IMGDIR
+
+cd $BUILDDIR
+
+repo init -u ssh://gerrit-server/android/manifest.git -b My8084
+repo sync --no-tags -cj4
+repo start --all base
+
+#
+# Are there any changes within the last 24 hours?
+#
+PLIST=$PWD/.repo/project.list
+BASE=$PWD
+C=0
+for i in `cat $PLIST`;
+do
+	cd $PWD/$i
+	C=`git --no-pager log --since='24 hours' | wc -l`
+	if [ $C -ne 0 ]; then
+		break
+	fi
+	cd $BASE
+done
+
+if [ $C -eq 0 ]; then
+	# No new changes in the last 24 hours
+	# Don't build
+	echo "No new changes detected in the last 24 hours" > $IMGDIR/result.txt
+	echo "Skipping Build" > $IMGDIR/result.txt
+	cd ..
+	rm -fr $BUILDDIR
+	exit 0
+fi
+
+#
+# Change log
+#
+echo "Generating changelog..."
+repo forall -c 'pwd;git --no-pager log --since="24 hours"' > $IMGDIR/change_log.txt
+source build/envsetup.sh
+lunch apq8084-userdebug
+export PROJECT_BUILD_SYSTEM1="true"
+echo "Starting Android 1  at `date`..." | tee -a $IMGDIR/build_log.txt
+make -j4 showcommands >> $IMGDIR/build_log.txt 2>&1
+if [ $? -ne 0 ]; then
+    echo "Android 1 build failed at `date`" | tee -a $IMGDIR/build_log.txt
+    echo "Build failed" > $IMGDIR/result.txt
+    cd ..
+    rm -fr $BUILDDIR
+    exit 0
+fi
+
+echo "Android 1 build successful at `date`" | tee -a $IMGDIR/build_log.txt
+mkdir -p BuildImages
+cp out/target/product/apq8084/signed/8084/emmc_appsboot.mbn BuildImages
+cp out/target/product/apq8084/boot.img BuildImages
+cp out/target/product/apq8084/diag.img BuildImages
+cp out/target/product/apq8084/system.img BuildImages
+
+export PROJECT_BUILD_SYSTEM1="false"
+echo "Building Android 2 at `date`..." | tee $IMGDIR/build_log.txt
+make -j4 showcommands >> $IMGDIR/build_log.txt 2>&1
+if [ $? -ne 0 ]; then
+    echo "Android build 2 failed at `date`" | tee -a $IMGDIR/build_log.txt
+    echo "Build failed" > $IMGDIR/result.txt
+    cd ..
+    rm -fr $BUILDDIR
+    exit 0
+fi
+
+echo "Android 2 build successful at `date`" | tee -a $IMGDIR/build_log.txt
+cp out/target/product/apq8084/boot.img BuildImages/boot2.img
+cp out/target/product/apq8084/cache.img BuildImages/cache.img
+cp out/target/product/apq8084/system.img BuildImages/system2.img
+cp out/target/product/apq8084/userdata.img BuildImages/userdata.img
+echo "Archiving images..." | tee -a $IMGDIR/build_log.txt
+tar -cJvf Images-`date +%d-%b-%Y`.tar.xz BuildImages
+echo "Cleaning up..." | tee -a $IMGDIR/build_log.txt
+mv *.tar.xz $IMGDIR/
+cd ..
+rm -fr $BUILDDIR
+echo "Build successful" > $IMGDIR/result.txt
+echo "Build complete: `date`" | tee -a $IMGDIR/build_log.txt
+

@@ -1,0 +1,6 @@
+--color
+#see http://stackoverflow.com/questions/9625316/what-color-options-exist-for-ack-grep-for-colorization-of-output-logs-etc
+--color-match=on_magenta
+--type-set=jay:ext:c,cpp,h,asm,java,s
+--smart-case
+--group

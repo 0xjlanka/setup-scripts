@@ -1,0 +1,4 @@
+create-patchset, patchset-merged: Gerrit -> Redmine hooks. Hooks that run when a patchset is submitted or merged.
+Uses regex matching to parse commit message for redmine issue number.
+
+gerrit-2.10-acl.txt: Gerrit 2.10 access control settings that have per project acl

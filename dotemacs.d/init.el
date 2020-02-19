@@ -13,7 +13,7 @@
 ;; set custom themes safe to load
 (setq custom-safe-themes t)
 ;; Custom theme
-(load-theme 'monokai)
+(load-theme 'wheatgrass)
 ;; M-% for search replace
 (global-set-key "\M-%" 'query-replace-regexp)
 ;; stop creating those backup~ files
@@ -41,8 +41,8 @@
 ;; Disable all bars
 (savehist-mode 1)
 (menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
+;(tool-bar-mode -1)
+;(scroll-bar-mode -1)
 ;; Disable startup messages
 (setq inhibit-startup-message t
       inhibit-startup-echo-area-message t)
@@ -67,13 +67,17 @@
 (setq display-time-24h-format t)
 
 ;; My key settings
+;; activate whitespace-mode to view all whitespace characters
+(global-set-key (kbd "C-c w") 'whitespace-mode)
+;; show unncessary whitespace that can mess up your diff
+(add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
 ;; C-a takes you to start of indentation
 (global-set-key (kbd "C-a") 'back-to-indentation)
 ;; M-m takes you to start of the line
 (global-set-key (kbd "M-m") 'move-beginning-of-line)
 ;; Kill the current buffer, don't ask for selection
 (global-set-key (kbd "C-x k") 'kill-current-buffer)
-;; Use C-i to go up in dired mode. ^ is too far
+;; Use C-l to go up in dired mode. ^ is too far
 (eval-after-load 'dired
   '(define-key dired-mode-map (kbd "C-l") 'dired-up-directory))
 ;; Make C-o smart to open a new line irrespective of the point position
@@ -95,6 +99,15 @@
 ;; Helm config
 (require 'helm-config)
 (helm-mode 1)
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t
+      helm-echo-input-in-header-line t)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 (global-set-key (kbd "C-x b") 'helm-mini)
@@ -109,15 +122,6 @@
       helm-imenu-fuzzy-match    t)
 (setq helm-M-x-fuzzy-match t)
 
-;; GGTAGS Support
-(setq
- helm-gtags-ignore-case t
- helm-gtags-use-input-at-cursor t
- helm-gtags-pulse-at-cursor t
- helm-gtags-prefix-key "\C-cg"
- helm-gtags-suggested-key-mapping t
- )
-
 (require 'helm-gtags)
 ;; Enable helm-gtags-mode
 (add-hook 'dired-mode-hook 'helm-gtags-mode)
@@ -125,6 +129,14 @@
 (add-hook 'c-mode-hook 'helm-gtags-mode)
 (add-hook 'c++-mode-hook 'helm-gtags-mode)
 (add-hook 'asm-mode-hook 'helm-gtags-mode)
+
+(setq
+ helm-gtags-ignore-case t
+ helm-gtags-use-input-at-cursor t
+ helm-gtags-pulse-at-cursor t
+ helm-gtags-prefix-key "\C-cg"
+ helm-gtags-suggested-key-mapping t
+)
 
 (define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
 (define-key helm-gtags-mode-map (kbd "C-c g f") 'helm-gtags-find-files)
@@ -166,6 +178,11 @@
 		tab-width 4))
 (kernel-mode)
 
+;; Enable completion mode
+(require 'company)
+(add-hook 'after-init-hook 'global-company-mode)
+(setq company-backends (delete 'company-semantic company-backends))
+
 ;; ediff split vertical
 (setq ediff-split-window-function 'split-window-horizontally)
 (custom-set-variables
@@ -173,7 +190,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages (quote (magit helm-gtags))))
+ '(package-selected-packages (quote (company magit helm helm-gtags monokai-theme))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

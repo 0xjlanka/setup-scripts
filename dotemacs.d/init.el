@@ -65,6 +65,8 @@
 (display-time-mode)
 ;; Set 24H time mode
 (setq display-time-24h-format t)
+;; Delete duplicates in minibuffer history
+(setq history-delete-duplicates t)
 
 ;; My key settings
 ;; activate whitespace-mode to view all whitespace characters
@@ -77,6 +79,10 @@
 (global-set-key (kbd "M-m") 'move-beginning-of-line)
 ;; Kill the current buffer, don't ask for selection
 (global-set-key (kbd "C-x k") 'kill-current-buffer)
+;; Use forward-to-word for M-f
+(global-set-key (kbd "M-f") 'forward-to-word)
+;; Use swiper-helm for search
+(global-set-key (kbd "M-s") 'swiper-helm)
 ;; Use C-l to go up in dired mode. ^ is too far
 (eval-after-load 'dired
   '(define-key dired-mode-map (kbd "C-l") 'dired-up-directory))
@@ -95,6 +101,7 @@
 ;;(add-hook 'c-mode-hook 'ggtags-mode)
 ;;(add-hook 'c++-mode-hook 'ggtags-mode)
 ;;(add-hook 'asm-mode-hook 'ggtags-mode)
+(global-auto-complete-mode t)
 
 ;; Helm config
 (require 'helm-config)
@@ -114,7 +121,7 @@
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "C-x c o") 'helm-occur)
 (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
-(global-set-key (kbd "C-x r b") 'helm-bookmarks)
+(global-set-key (kbd "C-x r b") 'helm-filtered-bookmarks)
 
 (setq helm-buffers-fuzzy-matching t
       helm-recentf-fuzzy-match    t)
@@ -147,9 +154,10 @@
 (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
 
 
-;; (ido-mode 1)
-;; (setq ido-enable-flex-matching t)
-;; (global-set-key (kbd "C-\\") 'recentf-open-files)
+;; Smartparens
+(require 'smartparens-config)
+(add-hook 'c-mode-hook 'turn-on-smartparens-strict-mode)
+(setq sp-escape-quotes-after-insert nil)
 
 ;; Magit
 (global-set-key (kbd "C-x C-g") 'magit-status)
@@ -178,19 +186,17 @@
 		tab-width 4))
 (kernel-mode)
 
-;; Enable completion mode
-(require 'company)
-(add-hook 'after-init-hook 'global-company-mode)
-(setq company-backends (delete 'company-semantic company-backends))
-
 ;; ediff split vertical
 (setq ediff-split-window-function 'split-window-horizontally)
+
+;; Added by emacs
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages (quote (company magit helm helm-gtags monokai-theme))))
+ '(package-selected-packages
+   '(smartparens auto-complete swiper-helm helm-rg magit helm helm-gtags)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

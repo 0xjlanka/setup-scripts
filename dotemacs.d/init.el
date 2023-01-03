@@ -1,10 +1,8 @@
 (require 'package)
-(add-to-list 'package-archives
-	     '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
+ (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 ;; Custom script load path
 (add-to-list 'load-path "~/.emacs.d/lisp/")
@@ -25,7 +23,7 @@
 ;; remember cursor position, for emacs 25.1 or later
 (save-place-mode 1)
 ;; make cursor movement stop in between camelCase words.
-(global-subword-mode 1)
+;(global-subword-mode 1)
 ;; UTF-8 as default encoding
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
@@ -73,16 +71,10 @@
 (global-set-key (kbd "C-c w") 'whitespace-mode)
 ;; show unncessary whitespace that can mess up your diff
 (add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
-;; C-a takes you to start of indentation
-(global-set-key (kbd "C-a") 'back-to-indentation)
-;; M-m takes you to start of the line
-(global-set-key (kbd "M-m") 'move-beginning-of-line)
 ;; Kill the current buffer, don't ask for selection
 (global-set-key (kbd "C-x k") 'kill-current-buffer)
 ;; Use forward-to-word for M-f
 (global-set-key (kbd "M-f") 'forward-to-word)
-;; Use swiper-helm for search
-(global-set-key (kbd "M-s") 'swiper-helm)
 ;; Use C-l to go up in dired mode. ^ is too far
 (eval-after-load 'dired
   '(define-key dired-mode-map (kbd "C-l") 'dired-up-directory))
@@ -94,83 +86,42 @@
   (newline-and-indent))
 (global-set-key (kbd "C-o") 'eol-and-nl)
 
+;; Ivy
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq ivy-virtual-abbreviate 'full)
+(setq ivy-count-format "(%d/%d) ")
 
-;; Gnu Global support
-;;(require 'ggtags)
-;;(setq ggtags-auto-jump-to-match nil)
-;;(add-hook 'c-mode-hook 'ggtags-mode)
-;;(add-hook 'c++-mode-hook 'ggtags-mode)
-;;(add-hook 'asm-mode-hook 'ggtags-mode)
+;; Avy
+(global-set-key (kbd "C-'") 'avy-goto-char-timer)
+
+(global-set-key (kbd "M-y") 'counsel-yank-pop)
+(global-set-key (kbd "C-c g") 'counsel-git)
+(global-set-key (kbd "C-c r") 'counsel-rg)
+(global-set-key (kbd "C-c f") 'counsel-fzf)
+(global-set-key (kbd "C-c C-r") 'ivy-resume)
+(global-set-key (kbd "C-c b") 'counsel-bookmark)
+
+;; Counsel-gtags
+(add-hook 'c-mode-hook 'counsel-gtags-mode)
+(add-hook 'c++-mode-hook 'counsel-gtags-mode)
+
+(with-eval-after-load 'counsel-gtags
+  (define-key counsel-gtags-mode-map (kbd "M-.") 'counsel-gtags-dwim)
+  (define-key counsel-gtags-mode-map (kbd "M-,") 'counsel-gtags-go-backward))
+
+;; autocomplete
 (global-auto-complete-mode t)
-
-;; Helm config
-(require 'helm-config)
-(helm-mode 1)
-(global-set-key (kbd "C-c h") 'helm-command-prefix)
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
-      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-      helm-ff-file-name-history-use-recentf t
-      helm-echo-input-in-header-line t)
-(global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-(global-set-key (kbd "C-x b") 'helm-mini)
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
-(global-set-key (kbd "C-x c o") 'helm-occur)
-(global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
-(global-set-key (kbd "C-x r b") 'helm-filtered-bookmarks)
-
-(setq helm-buffers-fuzzy-matching t
-      helm-recentf-fuzzy-match    t)
-(setq helm-semantic-fuzzy-match t
-      helm-imenu-fuzzy-match    t)
-(setq helm-M-x-fuzzy-match t)
-
-(require 'helm-gtags)
-;; Enable helm-gtags-mode
-(add-hook 'dired-mode-hook 'helm-gtags-mode)
-(add-hook 'eshell-mode-hook 'helm-gtags-mode)
-(add-hook 'c-mode-hook 'helm-gtags-mode)
-(add-hook 'c++-mode-hook 'helm-gtags-mode)
-(add-hook 'asm-mode-hook 'helm-gtags-mode)
-
-(setq
- helm-gtags-ignore-case t
- helm-gtags-use-input-at-cursor t
- helm-gtags-pulse-at-cursor t
- helm-gtags-prefix-key "\C-cg"
- helm-gtags-suggested-key-mapping t
-)
-
-(define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
-(define-key helm-gtags-mode-map (kbd "C-c g f") 'helm-gtags-find-files)
-(define-key helm-gtags-mode-map (kbd "C-j") 'helm-gtags-select)
-(define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
-(define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
-(define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
-(define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
-
 
 ;; Smartparens
 (require 'smartparens-config)
-(add-hook 'c-mode-hook 'turn-on-smartparens-strict-mode)
+(add-hook 'c-mode-hook 'turn-on-smartparens-mode)
 (setq sp-escape-quotes-after-insert nil)
 
 ;; Magit
 (global-set-key (kbd "C-x C-g") 'magit-status)
 ;; Smerge
 (setq smerge-command-prefix (kbd "C-c C-v"))
-
-;; bitbake files support
-(require 'bb-mode)
-(setq auto-mode-alist (cons '("\\.bb$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.inc$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.bbappend$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.bbclass$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.conf$" . bb-mode) auto-mode-alist))
 
 ;; Indentation
 (setq c-default-style "linux")
@@ -195,8 +146,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(smartparens auto-complete swiper-helm helm-rg magit helm helm-gtags)))
+ '(package-selected-packages '(avy smartparens magit counsel auto-complete)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

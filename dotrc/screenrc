@@ -1,0 +1,11 @@
+escape ^Jj
+term xterm-256color
+truecolors on
+hardstatus off
+startup_message off
+altscreen on
+bell off
+hardstatus alwayslastline '%{= G}[%= %{= w}%?%-Lw%?%{= R}%n*%f %t%?%{= R}(%u)%?%{= w}%+Lw%?%= %{= g}][%{B}%d-%M-%Y %{W}%c %{g}]'
+autodetach on
+defscrollback 99999
+msgminwait 0

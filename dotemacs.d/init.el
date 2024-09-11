@@ -1,8 +1,8 @@
 (require 'package)
- (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
 ;; and `package-pinned-packages`. Most users will not need or want to do this.
-;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+  (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 ;; Custom script load path
 (add-to-list 'load-path "~/.emacs.d/lisp/")
@@ -65,6 +65,10 @@
 (setq display-time-24h-format t)
 ;; Delete duplicates in minibuffer history
 (setq history-delete-duplicates t)
+;; Highlight current line
+(global-hl-line-mode 1)
+;; Show line numbers
+(global-display-line-numbers-mode 1)
 
 ;; My key settings
 ;; activate whitespace-mode to view all whitespace characters
@@ -146,7 +150,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(avy smartparens magit counsel auto-complete)))
+ '(package-selected-packages '(auto-complete avy counsel smartparens)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
